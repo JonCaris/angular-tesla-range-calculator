@@ -11,18 +11,43 @@ import { BatteryService } from '../../tesla-battery.service';
       <h1>{{title}}</h1>
       <tesla-car [wheelsize]="tesla.get('config.wheels').value"></tesla-car>
       <tesla-stats [stats]="stats"></tesla-stats>
-        <div class="tesla-battery__notice">
-          <p>
-            The actual amount of range that you experience will vary based 
-            on your particular use conditions. See how particular use conditions 
-            may affect your range in our simulation model.
-          </p>
-          <p>
-            Vehicle range may vary depending on the vehicle configuration,
-            battery age and condition, driving style and operating, environmental
-            and climate conditions.
-          </p>
+      <div class="tesla-controls cf" formGroupName="config">
+        <tesla-counter
+          [title]="'Speed'"
+          [unit]="'mph'"
+          [step]="5"
+          [min]="45"
+          [max]="70"
+          formControlName="speed">
+        </tesla-counter>
+        <div class="tesla-climate cf">
+          <tesla-counter
+            [title]="'Outside Temperature'"
+            [unit]="'°'" 
+            [step]="10"
+            [min]="-10"
+            [max]="40"
+            formControlName="temperature">
+          </tesla-counter>
+          <tesla-climate 
+            [limit]="tesla.get('config.temperature').value > 10" 
+            formControlName="climate">
+          </tesla-climate>
         </div>
+        <tesla-wheels formControlName="wheels"></tesla-wheels>
+      </div>
+      <div class="tesla-battery__notice">
+        <p>
+          The actual amount of range that you experience will vary based 
+          on your particular use conditions. See how particular use conditions 
+          may affect your range in our simulation model.
+        </p>
+        <p>
+          Vehicle range may vary depending on the vehicle configuration,
+          battery age and condition, driving style and operating, environmental
+          and climate conditions.
+        </p>
+      </div>
     </form>
   `,
   styleUrls: ['./tesla-battery.component.scss']
@@ -53,6 +78,10 @@ export class TeslaBatteryComponent implements OnInit {
     });
 
     this.stats = this.calculateStats(this.results, this.tesla.controls['config'].value);
+
+    this.tesla.controls['config'].valueChanges.subscribe(data => {
+      this.stats = this.calculateStats(this.results, data);
+    });
   }
 
   private calculateStats(models, value): Stat[]  {
